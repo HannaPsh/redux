@@ -1,15 +1,17 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   loadProjects,
   getOneProject,
   assign,
 } from '../redux/projects/projectsThunk';
-import * as actions from '../redux/projects/projectActions';
+import { OneUser } from '../redux/users.js/userActions';
 import { Link } from 'react-router-dom';
+import jwtDecode from 'jwt-decode';
 
 import styled from 'styled-components';
+import store from '../redux/projects/store';
 
 const Title = styled.h1`
   font-size: 2.5em;
@@ -30,13 +32,19 @@ export default function Projects() {
   const loaded = useSelector((state) => state.projects.isLoading);
   const error = useSelector((state) => state.projects.errorMessage);
   const projects = useSelector((state) => state.projects.projects);
-
   const user = useSelector((state) => state.auth.user);
+
+  const dispatch = useDispatch();
+
+  const obj = useMemo(() => {
+    return store.getState().projects.projects;
+  }, []); /* gör inget */
 
   useEffect(() => {
     dispatch(loadProjects());
+    dispatch(OneUser(jwtDecode(localStorage.getItem('token')).data));
   }, []);
-  const dispatch = useDispatch();
+
   return (
     <div>
       <Title>List of Projects</Title>
@@ -46,18 +54,25 @@ export default function Projects() {
         projects.map((project) => (
           <Project key={project._id}>
             <Link
-              /* to="/user" */
+              to="/project"
               onClick={() => dispatch(getOneProject(project._id))}
             >
+              {/* onClick={setTimeout(
+              () => dispatch(getOneProject(project._id)),
+              2000
+            ) */}
               {project.name}
             </Link>
-            {/*   <ChooseBtn
+            <div>{project.userId}</div>
+            <ChooseBtn
               onClick={() =>
-                dispatch(assign(project._id, { userId: user._id }))
+                dispatch(assign(project._id, user._id)).then(() =>
+                  dispatch(loadProjects())
+                )
               }
             >
               Choose
-            </ChooseBtn> */}
+            </ChooseBtn>
           </Project>
         ))}
     </div>

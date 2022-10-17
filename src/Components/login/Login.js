@@ -32,11 +32,11 @@ export default function Login() {
       return;
     } */
 
-    dispatch(login(loginData));
-
-    if (user) {
-      navigate('/projects');
-    }
+    dispatch(login(loginData)).then(() => {
+      if (user) {
+        navigate('/projects'); //*  window.location = '/projects'; */  /* use Promise? - not working */
+      }
+    });
   }
 
   return (
@@ -47,11 +47,12 @@ export default function Login() {
         {error && <p className="error">{error}</p>}
         {/* {validationError && <p className="error">{validationError.password}</p>} */}
         <div className="form_div">
-          <label>username:</label>
+          <label htmlFor="name">Username:</label>
           <input
             className="input-text"
             name="userName"
             type="text"
+            id="name"
             onChange={handleChange}
           />
           <label>Password:</label>
